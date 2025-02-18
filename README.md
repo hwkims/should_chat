@@ -1,6 +1,6 @@
 ![image](https://github.com/user-attachments/assets/9e6b567e-a9e8-49a2-bc29-0f1c2bf73f3f)
-알겠습니다. 최대한 웹 브라우저 API를 활용하고, 외부 API 의존성을 최소화하여 `app.py` 파일 하나로 동작하는 버전을 만들겠습니다. 다음은 수정된 코드입니다.
-
+[유튜브](https://www.youtube.com/watch?v=B5v5A1_niaU)
+[쇼츠](https://youtube.com/shorts/ARk9bfRXJ0g)
 ```python
 import streamlit as st
 import requests
