@@ -1,0 +1,10 @@
+streamlit
+requests
+torch
+torchaudio
+numpy
+zonos @ git+https://github.com/Zyphra/Zonos.git@main
+
+gtts
+
+duckduckgo_search

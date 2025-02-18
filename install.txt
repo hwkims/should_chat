@@ -1,0 +1,3 @@
+pip install streamlit requests gTTS duckduckgo-search speechrecognition
+
+streamlit run app.py

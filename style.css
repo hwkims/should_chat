@@ -1,0 +1,102 @@
+/* General Styles */
+body {
+    font-family: 'San Francisco', 'Helvetica Neue', sans-serif; /* Apple-like font */
+    background-color: #f0f2f5; /* Light gray background */
+}
+
+/* Title */
+.title {
+    color: #1c1e21; /* Dark gray */
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Input Area */
+.stTextInput, .stFileUploader, .stCameraInput {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Button */
+.stButton>button {
+    background-color: #4e5dcc; /*  blue */
+    color: white;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.stButton>button:hover {
+    background-color: #3a47a9; /* Darker blue on hover */
+}
+
+/* Result Area */
+.result-container {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.verdict {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    animation: pulse 1s infinite alternate; /* subtle pulse */
+
+}
+
+.positive {
+    color: #4CAF50; /* Green */
+}
+
+.negative {
+    color: #F44336; /* Red */
+}
+
+
+.stMetric {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.stMetric .stMetricValue { /* probability 숫자 */
+  font-size: 1.5em;
+}
+
+/* Expander */
+.stExpander {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations */
+@keyframes pulse {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.05);
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .title {
+        font-size: 2rem;
+    }
+    .verdict {
+        font-size: 2.5rem;
+    }
+    .stMetric {
+        font-size: 1.8rem;
+    }
+    .stTextInput, .stFileUploader, .stCameraInput, .stExpander{
+      padding: 0.7rem; /* Reduce padding on smaller screens */
+    }
+}
