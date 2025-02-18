@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>해야 할까요...? 🤔</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+KR">
+    <style>
+        /* --- Reset and Basic Styles --- */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fc; /* Light background */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        /* --- Input Fields --- */
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            box-sizing: border-box; /* Important for consistent sizing */
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus,
+        select:focus
+         {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        input[type="file"] {
+           width: 100%;
+           padding: 0.75rem;
+           font-size: 1rem;
+        }
+
+
+        /* --- Buttons --- */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-right: 0.5rem;
+        }
+
+        button:hover {
+            background-color: #367C39;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* --- Radio Buttons --- */
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .radio-group label {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .radio-group input[type="radio"] {
+            display: none; /* Hide the actual radio button */
+        }
+
+        .radio-group input[type="radio"]:checked + label {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        /* --- Result Area --- */
+        #resultArea {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+        }
+        #resultArea p{
+             margin-bottom: 0.3rem;
+        }
+
+        /* --- Progress Bar --- */
+        #progressBar {
+            width: 100%;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+            overflow: hidden;  /* Ensure the inner bar doesn't overflow */
+        }
+
+        #progressBarInner {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%; /* Initial width */
+            border-radius: 5px;
+            transition: width 0.5s ease; /* Smooth transition for width changes */
+        }
+
+        /* --- Pulse Animation --- */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite; /* Apply the pulse animation */
+        }
+
+
+        /* --- Error Message --- */
+        .error {
+            color: red;
+            margin-top: 0.5rem;
+        }
+        .hidden {
+            display: none;
+        }
+                /* --- Camera and Audio Styles --- */
+        #cameraPreview {
+            width: 100%;
+            max-width: 500px; /* Adjust as needed */
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+        }
+
+        #audioControls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        #audioRecording {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>해야 할까요...? 🤔</h1>
+
+        <h2>API 설정</h2>
+        <div class="input-group">
+            <label for="provider">API 제공자:</label>
+            <select id="provider" onchange="updateModelOptions()">
+                <option value="openai">OpenAI</option>
+                <option value="gemini">Google Gemini</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="apiKey">API 키:</label>
+            <input type="password" id="apiKey" placeholder="API 키를 입력하세요">
+            <button onclick="saveApiKey()">저장</button>
+            <button onclick="clearApiKey()">삭제</button>
+        </div>
+
+        <div class="input-group">
+            <label for="model">모델:</label>
+            <select id="model"></select>
+        </div>
+
+        <h2>LLM 설정</h2>
+          <div class="input-group">
+            <label for="temperature">Temperature:</label>
+            <input type="number" id="temperature" value="0.7" min="0.1" max="2.0" step="0.1">
+          </div>
+            <div class="input-group">
+                <label for="topP">Top P:</label>
+                <input type="number" id="topP" value="0.9" min="0.1" max="1.0" step="0.05">
+            </div>
+            <div class="input-group">
+                <label for="topK">Top K:</label>
+                <input type="number" id="topK" value="50" min="1" max="100" step="1">
+            </div>
+            <div class="input-group">
+                <label for="maxTokens">Max Tokens:</label>
+                <input type="number" id="maxTokens" value="256" min="1" max="2048" step="1">
+            </div>
+            <div class="input-group">
+                <label for="repeatPenalty">Repeat Penalty:</label>
+                <input type="number" id="repeatPenalty" value="1.1" min="0.1" max="2.0" step="0.05">
+            </div>
+
+        <h2>TTS 설정</h2>
+           <div class="input-group">
+                <label for="ttsVoice">TTS 음성:</label>
+                <select id="ttsVoice"></select>
+            </div>
+            <div class="input-group">
+                <label for="ttsSpeed">TTS 속도:</label>
+                <input type="range" id="ttsSpeed" min="0.5" max="2" step="0.1" value="1">
+                <span id="ttsSpeedValue">1</span>
+           </div>
+
+        <h2>입력 유형</h2>
+        <div class="radio-group">
+            <input type="radio" id="inputTypeText" name="inputType" value="text" checked>
+            <label for="inputTypeText">텍스트</label>
+
+            <input type="radio" id="inputTypeImage" name="inputType" value="image">
+            <label for="inputTypeImage">이미지</label>
+
+            <input type="radio" id="inputTypeCamera" name="inputType" value="camera">
+            <label for="inputTypeCamera">카메라</label>
+
+            <input type="radio" id="inputTypeAudio" name="inputType" value="audio">
+            <label for="inputTypeAudio">오디오</label>
+        </div>
+
+
+        <div class="input-group" id="textInputGroup">
+            <label for="question">질문:</label>
+            <textarea id="question" placeholder="질문을 입력하세요"></textarea>
+        </div>
+
+        <div class="input-group hidden" id="imageInputGroup">
+            <label for="imageUpload">이미지 업로드:</label>
+            <input type="file" id="imageUpload" accept="image/*">
+        </div>
+
+          <div class="input-group hidden" id="cameraInputGroup">
+            <label for="cameraPreview">카메라 미리보기:</label>
+            <video id="cameraPreview" autoplay playsinline></video>
+            <button onclick="captureImage()">사진 찍기</button>
+            <canvas id="capturedImageCanvas" style="display: none;"></canvas>
+        </div>
+
+        <div class="input-group hidden" id="audioInputGroup">
+            <label>오디오 녹음:</label>
+            <div id="audioControls">
+                <button id="recordButton" onclick="startRecording()">녹음 시작</button>
+                <button id="stopButton" onclick="stopRecording()" disabled>녹음 중지</button>
+            </div>
+            <audio id="audioRecording" controls></audio>
+        </div>
+
+
+
+        <button onclick="analyze()" id="analyzeButton">분석</button>
+
+        <div id="resultArea">
+            <p id="probability"></p>
+            <div id="progressBar"><div id="progressBarInner"></div></div>
+            <p id="reason"></p>
+            <audio id="ttsAudio" controls></audio>
+        </div>
+        <div id="errorMessage" class="error"></div>
+
+    </div>
+
+    <script>
+        // --- Global Variables ---
+        let currentProvider = 'openai';
+        let mediaStream = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let ttsVoices = [];
+
+
+        // --- Model Options (You can expand these) ---
+        const openAIModels = ["gpt-3.5-turbo", "gpt-4-turbo-preview","gpt-4"];  // Add more
+        const geminiModels = ["gemini-1.5-pro-002", "gemini-1.5-flash-002","gemini-1.0-pro-002"];  // Add more
+
+        // --- DOM Element References ---
+        const providerSelect = document.getElementById('provider');
+        const apiKeyInput = document.getElementById('apiKey');
+        const modelSelect = document.getElementById('model');
+        const questionTextarea = document.getElementById('question');
+        const imageUploadInput = document.getElementById('imageUpload');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const resultArea = document.getElementById('resultArea');
+        const probabilityText = document.getElementById('probability');
+        const progressBarInner = document.getElementById('progressBarInner');
+        const reasonText = document.getElementById('reason');
+        const ttsAudio = document.getElementById('ttsAudio');
+        const errorMessage = document.getElementById('errorMessage');
+        const textInputGroup = document.getElementById('textInputGroup');
+        const imageInputGroup = document.getElementById('imageInputGroup');
+        const cameraInputGroup = document.getElementById('cameraInputGroup');
+        const audioInputGroup = document.getElementById('audioInputGroup');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const capturedImageCanvas = document.getElementById('capturedImageCanvas');
+        const recordButton = document.getElementById('recordButton');
+        const stopButton = document.getElementById('stopButton');
+        const audioRecording = document.getElementById('audioRecording');
+        const ttsVoiceSelect = document.getElementById('ttsVoice');
+        const ttsSpeedInput = document.getElementById('ttsSpeed');
+        const ttsSpeedValue = document.getElementById('ttsSpeedValue');
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadApiKeys();
+            updateModelOptions();
+            setupInputTypeSwitching();
+            populateTTSVoices();
+            setupTTSEvents();
+
+            // Try to start camera stream on load (for camera input)
+             startCameraStream();
+        });
+
+        function setupTTSEvents() {
+            ttsSpeedInput.addEventListener('input', () => {
+                ttsSpeedValue.textContent = ttsSpeedInput.value;
+            });
+        }
+
+        function populateTTSVoices() {
+            // Wait for voices to be loaded
+            window.speechSynthesis.onvoiceschanged = () => {
+                ttsVoices = window.speechSynthesis.getVoices();
+                ttsVoiceSelect.innerHTML = ''; // Clear existing options
+
+                ttsVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.value = voice.name;
+                    ttsVoiceSelect.appendChild(option);
+                });
+            };
+        }
+
+        function speakText(text) {
+            if (!text) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            const selectedVoiceName = ttsVoiceSelect.value;
+            const selectedVoice = ttsVoices.find(voice => voice.name === selectedVoiceName);
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            utterance.rate = parseFloat(ttsSpeedInput.value);
+            window.speechSynthesis.speak(utterance);
+        }
+
+
+        function setupInputTypeSwitching() {
+            const inputTypes = document.querySelectorAll('input[name="inputType"]');
+            inputTypes.forEach(input => {
+                input.addEventListener('change', () => {
+                    textInputGroup.classList.add('hidden');
+                    imageInputGroup.classList.add('hidden');
+                    cameraInputGroup.classList.add('hidden');
+                    audioInputGroup.classList.add('hidden');
+
+                    if (input.value === 'text') {
+                        textInputGroup.classList.remove('hidden');
+                    } else if (input.value === 'image') {
+                        imageInputGroup.classList.remove('hidden');
+                    } else if (input.value === 'camera') {
+                        cameraInputGroup.classList.remove('hidden');
+                        startCameraStream(); // Start camera when switching
+                    } else if (input.value === 'audio') {
+                        audioInputGroup.classList.remove('hidden');
+                    }
+                });
+            });
+        }
+
+
+
+        // --- API Key Management ---
+        function saveApiKey() {
+            const provider = providerSelect.value;
+            const apiKey = apiKeyInput.value;
+            if (apiKey) {
+                localStorage.setItem(`${provider}_apiKey`, apiKey);
+                alert(`${provider} API 키가 저장되었습니다.`);
+            }
+        }
+
+        function clearApiKey() {
+            const provider = providerSelect.value;
+            localStorage.removeItem(`${provider}_apiKey`);
+            apiKeyInput.value = '';
+            alert(`${provider} API 키가 삭제되었습니다.`);
+        }
+
+        function loadApiKeys() {
+            const provider = providerSelect.value;
+            const storedApiKey = localStorage.getItem(`${provider}_apiKey`);
+            if (storedApiKey) {
+                apiKeyInput.value = storedApiKey;
+            }
+        }
+
+        function updateModelOptions() {
+            currentProvider = providerSelect.value;
+            modelSelect.innerHTML = ''; // Clear existing options
+
+            const models = currentProvider === 'openai' ? openAIModels : geminiModels;
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                modelSelect.appendChild(option);
+            });
+
+            loadApiKeys(); // Reload API key when provider changes
+        }
+
+        // --- Camera Functions ---
+       async function startCameraStream() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                cameraPreview.srcObject = mediaStream;
+                cameraPreview.style.display = 'block';
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                errorMessage.textContent = "카메라 접근에 실패했습니다: " + err.message;
+                // Hide camera-related elements if camera access fails
+                cameraInputGroup.classList.add('hidden');
+           }
+        }
+
+        function captureImage() {
+            if (!mediaStream) return;
+
+            const context = capturedImageCanvas.getContext('2d');
+            capturedImageCanvas.width = cameraPreview.videoWidth;
+            capturedImageCanvas.height = cameraPreview.videoHeight;
+            context.drawImage(cameraPreview, 0, 0, cameraPreview.videoWidth, cameraPreview.videoHeight);
+
+             // Stop the camera stream after capturing
+              if(mediaStream) {
+                  mediaStream.getTracks().forEach(track => track.stop());
+                  mediaStream = null; // Reset the stream
+                  cameraPreview.srcObject = null; // Clear the video element
+              }
+
+            // Trigger the analysis with the captured image
+            analyze();
+        }
+
+
+        // --- Audio Recording Functions ---
+
+        async function startRecording() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(mediaStream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioRecording.src = audioUrl;
+                     // Stop the mic stream after capturing
+                      if(mediaStream) {
+                          mediaStream.getTracks().forEach(track => track.stop());
+                          mediaStream = null; // Reset the stream
+                      }
+                };
+
+                mediaRecorder.start();
+                recordButton.disabled = true;
+                stopButton.disabled = false;
+            } catch (err) {
+                console.error('Error accessing microphone:', err);
+                 errorMessage.textContent = "마이크 접근에 실패했습니다: " + err.message;
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                recordButton.disabled = false;
+                stopButton.disabled = true;
+            }
+        }
+
+
+        // --- Analysis Function (Main Logic) ---
+        async function analyze() {
+            errorMessage.textContent = ''; // Clear previous errors
+            resultArea.style.display = 'none'; // Hide previous results
+            const provider = providerSelect.value;
+            const apiKey = apiKeyInput.value;
+            const model = modelSelect.value;
+            const inputType = document.querySelector('input[name="inputType"]:checked').value;
+
+
+            if (!apiKey) {
+                errorMessage.textContent = 'API 키를 입력해주세요.';
+                return;
+            }
+
+            let inputText = '';
+            let imageData = null;
+
+             // LLM settings
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const topP = parseFloat(document.getElementById('topP').value);
+            const topK = parseInt(document.getElementById('topK').value);
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            const repeatPenalty = parseFloat(document.getElementById('repeatPenalty').value);
+
+
+
+            if (inputType === 'text') {
+                inputText = questionTextarea.value;
+                if (!inputText) {
+                    errorMessage.textContent = '질문을 입력해주세요.';
+                    return;
+                }
+            } else if (inputType === 'image') {
+                if (imageUploadInput.files.length > 0) {
+                    imageData = await readFileAsBase64(imageUploadInput.files[0]);
+                 } else if (capturedImageCanvas.width > 0) { // Check if canvas has content
+                      imageData = capturedImageCanvas.toDataURL('image/jpeg').split(',')[1]; // Get base64 from canvas
+                } else {
+                    errorMessage.textContent = '이미지를 업로드하거나 카메라로 사진을 찍어주세요.';
+                    return;
+                }
+
+            } else if (inputType === 'audio') {
+                  if (audioChunks.length === 0) {
+                      errorMessage.textContent = "오디오를 녹음해주세요.";
+                      return;
+                  }
+                  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                  // Convert the audio blob to base64
+                  try {
+                        inputText = await convertAudioBlobToBase64(audioBlob);
+                       // inputText = await transcribeAudio(audioBlob, apiKey, provider);
+                  }
+                  catch (error) {
+                        errorMessage.textContent = "오디오 처리 중 오류 발생: " + error.message;
+                        return;
+
+                  }
+             }
+
+            analyzeButton.disabled = true;
+            progressBarInner.style.width = '0%';
+            progressBarInner.classList.add('pulse');
+            resultArea.style.display = 'block'; // Show the result area (for the progress bar)
+
+           try {
+                let result;
+                if (provider === 'openai') {
+                    result = await analyzeWithOpenAI(apiKey, model, inputText, imageData, temperature, topP, topK, maxTokens, repeatPenalty);
+                } else if (provider === 'gemini') {
+                    result = await analyzeWithGemini(apiKey, model, inputText, imageData,temperature, topP, topK, maxTokens, repeatPenalty);
+                }
+
+              if (result) {
+                    displayResult(result);
+                }
+
+            } catch (error) {
+                errorMessage.textContent = "분석 중 오류 발생: " + error.message;
+            } finally {
+                analyzeButton.disabled = false;
+                progressBarInner.classList.remove('pulse');
+            }
+        }
+
+        //--- Audio Processing ---
+       function convertAudioBlobToBase64(audioBlob) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              resolve(reader.result.split(',')[1]); // Base64 data, without the data:audio/webm;base64, part
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(audioBlob);
+          });
+        }
+
+
+       async function transcribeAudio(audioBase64, apiKey, provider) {
+
+            const headers = {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            };
+            let data = {};
+            let apiUrl = '';
+
+            if(provider === 'openai'){
+                apiUrl = 'https://api.openai.com/v1/audio/transcriptions';
+                data = {
+                    "model": "whisper-1", // OpenAI Whisper model
+                    "file": `data:audio/webm;base64,${audioBase64}`, // Include the base64 data directly
+                 };
+
+            } else if (provider === 'gemini'){
+              //Google Cloud Speech-to-Text API  - gemini 용 STT 가 없음.
+               return;
+
+            } else{
+                throw new Error("지원하지않는 provider 입니다." + provider);
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error("STT API Error: " + (errorData.error?.message || response.statusText));
+            }
+            const responseData = await response.json();
+            return provider === 'openai' ? responseData.text : (responseData.results[0]?.alternatives[0]?.transcript || "");
+
+
+        }
+
+        // --- API Call Functions ---
+
+        async function analyzeWithOpenAI(apiKey, model, inputText, imageData, temperature, topP, topK, maxTokens, repeatPenalty) {
+            const apiUrl = 'https://api.openai.com/v1/chat/completions';
+            const headers = {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            };
+            let messages = [];
+             // System message for analysis
+             messages.push({
+                    "role": "system",
+                    "content": `
+                        당신은 전문 분석가입니다. 주어진 정보와 질문을 분석하여, '예' 또는 '아니오'로 대답할 가능성을 백분율(0-100)로 제시하고, 그 이유를 설명해주세요.  해당되는 경우 출처를 인용하세요.
+
+                        예시:
+                        {"probability": 75, "reason": "현재 시장 동향과 전문가 의견에 따르면, 해당 주식은 강력한 성장 잠재력을 보입니다. 출처:구글"}
+                    `
+                });
+
+            if (imageData) {
+                 // For image input, use a combined user message with text and image
+                messages.push({
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": inputText ? `${inputText}\n\n관련 정보:\n${await performDDGSearch(inputText)}`: "사진에 대해 분석해주세요."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": `data:image/jpeg;base64,${imageData}`
+                            }
+                        }
+                    ]
+                });
+            } else {
+                // For text-only input
+                 messages.push({
+                    "role": "user",
+                    "content": inputText + `\n\n관련 정보:\n${await performDDGSearch(inputText)}`
+                });
+
+            }
+
+
+            const data = {
+                model: model,
+                messages: messages,
+                 max_tokens: maxTokens,
+                temperature: temperature,
+                top_p: topP,
+                n: 1,
+                stop: null,
+                 presence_penalty: repeatPenalty, // Assuming presence_penalty maps to repeatPenalty
+                frequency_penalty: 0,  // You might need to adjust how you handle frequency penalty
+
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error("OpenAI API Error: " + (errorData.error?.message || response.statusText));
+            }
+
+            const responseData = await response.json();
+           // Extract and return the relevant information
+            try {
+
+                 const contentStr = responseData.choices[0].message.content;
+                 const contentJson = JSON.parse(contentStr);
+                 return {
+                      probability: contentJson.probability,
+                      reason: contentJson.reason
+                  };
+
+            } catch (error) {
+                 throw new Error("Invalid JSON response from OpenAI: " + error.message);
+            }
+        }
+
+
+
+       async function analyzeWithGemini(apiKey, model, inputText, imageData, temperature, topP, topK, maxTokens, repeatPenalty) {
+
+             // Construct the endpoint URL based on the selected model
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+             let requestData = {
+                contents: [],
+                generationConfig: {
+                    temperature: temperature,
+                    topP: topP,
+                    topK: topK,
+                    maxOutputTokens: maxTokens, // Corrected parameter name
+                   // Gemini API doesn't have a direct equivalent for repeat_penalty (presence_penalty),
+                   // so we'll omit it. Consider using a different approach if repetition is a major concern.
+                }
+            };
+
+              // System prompt (added as a separate part in the content)
+            requestData.contents.push({
+                role: "model",
+                parts: [{
+                    text: `
+                       당신은 전문 분석가입니다. 주어진 정보와 질문을 분석하여, '예' 또는 '아니오'로 대답할 가능성을 백분율(0-100)로 제시하고, 그 이유를 설명해주세요.  해당되는 경우 출처를 인용하세요.
+
+                        예시:
+                        {"probability": 75, "reason": "현재 시장 동향과 전문가 의견에 따르면, 해당 주식은 강력한 성장 잠재력을 보입니다. 출처:구글"}
+                    `
+                }]
+            });
+
+             if (imageData) {
+                 const imagePart = {
+                    inlineData: {
+                        mimeType: "image/jpeg",  // Assuming JPEG, adjust if necessary
+                        data: imageData
+                    }
+                };
+
+                 const textPart = {
+                     text: inputText ? `${inputText}\n\n관련 정보:\n${await performDDGSearch(inputText)}` : "사진에 대해 분석해주세요."
+                 };
+                  // Add both text and image parts within a *single* user role entry
+                 requestData.contents.push({
+                    role: "user",
+                    parts: [textPart, imagePart]  // Both parts in one user message
+                });
+
+             } else {
+                requestData.contents.push({
+                    role: "user",
+                    parts: [{ text: inputText + `\n\n관련 정보:\n${await performDDGSearch(inputText)}`}]
+                });
+
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(requestData)
+            });
+
+           if (!response.ok) {
+                const errorData = await response.json(); // Attempt to get JSON error details
+                throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+           }
+
+            const responseData = await response.json();
+
+            try {
+
+                  const contentStr = responseData.candidates[0].content.parts[0].text;
+                  const contentJson = JSON.parse(contentStr);
+                  return {
+                        probability: contentJson.probability,
+                        reason: contentJson.reason
+                    };
+
+            } catch (error) {
+                throw new Error("Invalid JSON response from Gemini: " + error.message);
+            }
+        }
+
+
+
+        // --- Helper Functions ---
+
+        async function performDDGSearch(query) {
+            //  DuckDuckGo Search (Simplified -  CORS proxy needed for a browser)
+            //  In a real application, do this on the server.
+            if (!query) return "";
+            try {
+                 const proxyUrl = "https://cors-anywhere.herokuapp.com/"; // Example CORS proxy
+                const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&pretty=1`;
+                const response = await fetch(proxyUrl + ddgUrl);
+
+                if (!response.ok) {
+                    throw new Error(`DuckDuckGo Search failed: ${response.statusText}`);
+                }
+                const data = await response.json();
+                // Extract relevant information (adjust as needed)
+                let results = [];
+                if (data.AbstractText) {
+                    results.push(data.AbstractText);
+                }
+                if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
+                    data.RelatedTopics.forEach(topic => {
+                        if (topic.Text) {
+                            results.push(topic.Text);
+                        }
+                    });
+                }  //From previous response
+
+                return results.join('\n\n');
+
+            } catch (error) {
+                console.error("Error performing DuckDuckGo search:", error);
+                errorMessage.textContent = "DuckDuckGo 검색 중 오류 발생: " + error.message;
+                return ""; // Return empty string on error
+            }
+        }
+
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]); // Get base64 data
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function displayResult(result) {
+            if (result.probability !== undefined && result.reason) {
+                probabilityText.textContent = `확률: ${result.probability}%`;
+                progressBarInner.style.width = `${result.probability}%`;
+                reasonText.textContent = `이유: ${result.reason}`;
+                speakText(result.reason);  //TTS
+                resultArea.style.display = 'block';
+            } else {
+                errorMessage.textContent = '유효한 결과를 받지 못했습니다.';
+            }
+        }
+
+
+    </script>
+</body>
+</html>
